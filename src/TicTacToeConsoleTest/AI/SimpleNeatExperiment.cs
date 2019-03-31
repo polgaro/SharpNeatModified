@@ -202,7 +202,7 @@ namespace TicTacToeConsoleTest
             IGenomeDecoder<NeatGenome, IBlackBox> genomeDecoder = new NeatGenomeDecoder(_activationScheme);
 
             // Create a genome2 list evaluator. This packages up the genome2 decoder with the genome2 evaluator.
-            IGenomeListEvaluator<NeatGenome> genomeListEvaluator = new ParallelGenomeListEvaluator<NeatGenome, IBlackBox>(genomeDecoder, PhenomeEvaluator, _parallelOptions);
+            IGenomeListEvaluator<NeatGenome> genomeListEvaluator = GetGenomeListEvaluator(genomeDecoder);
 
             // Wrap the list evaluator in a 'selective' evaulator that will only evaluate new genomes. That is, we skip re-evaluating any genomes
             // that were in the population in previous generations (elite genomes). This is determiend by examining each genome2's evaluation info object.
@@ -215,6 +215,13 @@ namespace TicTacToeConsoleTest
 
             // Finished. Return the evolution algorithm
             return ea;
+        }
+
+        public virtual IGenomeListEvaluator<NeatGenome> GetGenomeListEvaluator(
+            IGenomeDecoder<NeatGenome, IBlackBox> genomeDecoder)
+        {
+            //by default use a parallel evaluator
+            return new ParallelGenomeListEvaluator<NeatGenome, IBlackBox>(genomeDecoder, PhenomeEvaluator, _parallelOptions);
         }
 
         /// <summary>

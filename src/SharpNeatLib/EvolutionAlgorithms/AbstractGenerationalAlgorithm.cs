@@ -260,26 +260,19 @@ namespace SharpNeat.EvolutionAlgorithms
 
                 for(;;)
                 {
-                    _currentGeneration++;
                     PerformOneGeneration();
+                    PerformUpdateCallbacks();
 
-                    if(UpdateTest())
-                    {
-                        _prevUpdateGeneration = _currentGeneration;
-                        _prevUpdateTimeTick = DateTime.Now.Ticks;
-                         OnUpdateEvent();
-                    }
-                
                     // Check if a pause has been requested. 
                     // Access to the flag is not thread synchronized, but it doesn't really matter if
                     // we miss it being set and perform one other generation before pausing.
-                    if(_pauseRequestFlag || _genomeListEvaluator.StopConditionSatisfied)
+                    if (_pauseRequestFlag || _genomeListEvaluator.StopConditionSatisfied)
                     {
                         // Signal to any waiting thread that we are pausing
                         _awaitPauseEvent.Set();
 
                         // Test for terminate signal.
-                        if(_terminateFlag) 
+                        if (_terminateFlag)
                         {
                             _runState = RunState.Terminated;
                             return;
@@ -298,6 +291,16 @@ namespace SharpNeat.EvolutionAlgorithms
             }
             catch(ThreadAbortException)
             {   // Quietly exit thread.
+            }
+        }
+
+        public void PerformUpdateCallbacks()
+        {
+            if (UpdateTest())
+            {
+                _prevUpdateGeneration = _currentGeneration;
+                _prevUpdateTimeTick = DateTime.Now.Ticks;
+                OnUpdateEvent();
             }
         }
 
@@ -344,7 +347,7 @@ namespace SharpNeat.EvolutionAlgorithms
         /// <summary>
         /// Progress forward by one generation. Perform one generation/cycle of the evolution algorithm.
         /// </summary>
-        protected abstract void PerformOneGeneration();
+        public abstract void PerformOneGeneration();
 
         #endregion
     }

@@ -33,7 +33,14 @@ namespace TicTacToeConsoleTest
             get { return _stopConditionSatisfied; }
         }
 
-         public FitnessInfo Evaluate(IBlackBox box)
+        public FitnessInfo Evaluate(IBlackBox box)
+        {
+            double fitness = GetFitness(box);
+
+            return new FitnessInfo(fitness, fitness);
+        }
+
+        public double GetFitness(IBlackBox box)
         {
             double fitness = 0;
 
@@ -55,10 +62,10 @@ namespace TicTacToeConsoleTest
                 {
                     fitness += Game.NumberOfMoves;
                 }
-                
+
             }
 
-            return new FitnessInfo(fitness, fitness);
+            return fitness;
         }
 
         private double GetScore(WinnerEnum winnerEnum)

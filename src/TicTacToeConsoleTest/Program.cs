@@ -1,7 +1,11 @@
-﻿using SharpNeat.EvolutionAlgorithms;
+﻿using SharpNeat.Core;
+using SharpNeat.EvolutionAlgorithms;
 using SharpNeat.Genomes.Neat;
+using SharpNeat.Phenomes;
+using SharpNeatLib.Model;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Xml;
 using TitTacToeGame;
 
@@ -76,9 +80,49 @@ namespace TicTacToeConsoleTest
                 _ea = experiment.CreateEvolutionAlgorithm();
                 _ea.UpdateEvent += new EventHandler(ea_UpdateEvent);
 
-                // Start algorithm (it will run on a background thread).
-                _ea.StartContinue();
+                bool useUnnatendedTrain = false;
+                if (useUnnatendedTrain)
+                {
+                    #region Unattended Train
+                    // Start algorithm (it will run on a background thread).
+                    _ea.StartContinue();
+                    #endregion
+                }
+                else
+                {
+                    #region Attended Train
+                    while (true)
+                    {
+                        //start the generation
+                        _ea.StartGeneration();
 
+                        //create offpring
+                        CreateOffpringDTO<NeatGenome> offspringData = _ea.CreateOffpring();
+
+                        //create genome decoder
+                        var decoder = experiment.CreateGenomeDecoder();
+
+                        //with the offpring, evaluate
+                        var answers = offspringData.OffspringList.ToDictionary(
+                            x => x, 
+                            x => new GameEvaluator().Evaluate(decoder.Decode(x))
+                        );
+
+                        //set answers
+                        KnownAnswerListEvaluator<NeatGenome, IBlackBox> evaluator = new KnownAnswerListEvaluator<NeatGenome, IBlackBox>();
+                        evaluator.SetKnownAnswers(answers);
+
+                        //call the evaluator
+                        evaluator.Evaluate(offspringData.OffspringList);
+
+                        //Update the species
+                        _ea.UpdateSpecies(offspringData);
+
+                        //call callbacks :)
+                        _ea.PerformUpdateCallbacks();
+                    }
+                    #endregion Attended Train
+                }
                 Console.ReadLine();
                 #endregion Train
             }
@@ -87,7 +131,11 @@ namespace TicTacToeConsoleTest
         private static void ea_UpdateEvent(object sender, EventArgs e)
         {
             NeatEvolutionAlgorithm<NeatGenome> _ea = (NeatEvolutionAlgorithm<NeatGenome>)sender;
-            Console.WriteLine(string.Format("gen={0:N0} bestFitness={1:N6} complexity={2}", _ea.CurrentGeneration, _ea.Statistics._maxFitness, _ea.Statistics._maxComplexity));
+            Console.WriteLine(string.Format("gen={0:N0} bestFitness={1:N6} maxComplexity={2} currentChampComplexity={3}", 
+                _ea.CurrentGeneration, 
+                _ea.Statistics._maxFitness, 
+                _ea.Statistics._maxComplexity, 
+                _ea.CurrentChampGenome.Complexity));
 
             // Save the best genome to file
             var doc = NeatGenomeXmlIO.SaveComplete(new List<NeatGenome>() { _ea.CurrentChampGenome }, false);

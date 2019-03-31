@@ -22,6 +22,7 @@ using SharpNeat.Core;
 using SharpNeat.DistanceMetrics;
 using SharpNeat.EvolutionAlgorithms.ComplexityRegulation;
 using SharpNeat.SpeciationStrategies;
+using SharpNeatLib.Model;
 
 namespace SharpNeat.EvolutionAlgorithms
 {
@@ -182,32 +183,30 @@ namespace SharpNeat.EvolutionAlgorithms
         /// <summary>
         /// Progress forward by one generation. Perform one generation/iteration of the evolution algorithm.
         /// </summary>
-        protected override void PerformOneGeneration()
+        public override void PerformOneGeneration()
         {
-            // Calculate statistics for each specie (mean fitness, target size, number of offspring to produce etc.)
-            int offspringCount;
-            SpecieStats[] specieStatsArr = CalcSpecieStats(out offspringCount);
-            
-            // Create offspring.
-            List<TGenome> offspringList = CreateOffspring(specieStatsArr, offspringCount);
+            StartGeneration();
 
-            // Trim species back to their elite genomes.
-            bool emptySpeciesFlag = TrimSpeciesBackToElite(specieStatsArr);
+            //create offpring
+            CreateOffpringDTO<TGenome> offspringData = CreateOffpring();
 
-            // Rebuild _genomeList. It will now contain just the elite genomes.
-            RebuildGenomeList();
+            // Evaluate genomes using the default (unattended) evaluator
+            EvaluateGenomes();
 
-            // Append offspring genomes to the elite genomes in _genomeList. We do this before calling the
-            // _genomeListEvaluator.Evaluate because some evaluation schemes re-evaluate the elite genomes 
-            // (otherwise we could just evaluate offspringList).
-            _genomeList.AddRange(offspringList);
+            //Update the species
+            UpdateSpecies(offspringData);
+        }
 
-            // Evaluate genomes.
-            _genomeListEvaluator.Evaluate(_genomeList);
+        public void StartGeneration()
+        {
+            _currentGeneration++;
+        }
 
+        public void UpdateSpecies(CreateOffpringDTO<TGenome> offspringData)
+        {
             // Integrate offspring into species.
-            if(emptySpeciesFlag)
-            {   
+            if (offspringData.EmptySpeciesFlag)
+            {
                 // We have one or more terminated species. Therefore we need to fully re-speciate all genomes to divide them
                 // evenly between the required number of species.
 
@@ -220,13 +219,13 @@ namespace SharpNeat.EvolutionAlgorithms
             else
             {
                 // Integrate offspring into the existing species. 
-                _speciationStrategy.SpeciateOffspring(offspringList, _specieList);            
+                _speciationStrategy.SpeciateOffspring(offspringData.OffspringList, _specieList);
             }
             Debug.Assert(!TestForEmptySpecies(_specieList), "Speciation resulted in one or more empty species.");
 
             // Sort the genomes in each specie. Fittest first (secondary sort - youngest first).
             SortSpecieGenomes();
-             
+
             // Update stats and store reference to best genome.
             UpdateBestGenome();
             UpdateStats();
@@ -236,7 +235,7 @@ namespace SharpNeat.EvolutionAlgorithms
             // (e.g. reduce or disable additive mutations).
             _complexityRegulationMode = _complexityRegulationStrategy.DetermineMode(_stats);
             _genomeFactory.SearchMode = (int)_complexityRegulationMode;
-            switch(_complexityRegulationMode)
+            switch (_complexityRegulationMode)
             {
                 case ComplexityRegulationMode.Complexifying:
                     _eaParams = _eaParamsComplexifying;
@@ -248,6 +247,39 @@ namespace SharpNeat.EvolutionAlgorithms
 
             // TODO: More checks.
             Debug.Assert(_genomeList.Count == _populationSize);
+        }
+
+        public void EvaluateGenomes()
+        {
+            _genomeListEvaluator.Evaluate(_genomeList);
+        }
+
+        public CreateOffpringDTO<TGenome> CreateOffpring()
+        {
+
+
+            //create return variable
+            CreateOffpringDTO<TGenome> ret = new CreateOffpringDTO<TGenome>();
+
+            // Calculate statistics for each specie (mean fitness, target size, number of offspring to produce etc.)
+            int offspringCount;
+            SpecieStats[] specieStatsArr = CalcSpecieStats(out offspringCount);
+
+            // Create offspring.
+            ret.OffspringList = CreateOffspring(specieStatsArr, offspringCount);
+
+            // Trim species back to their elite genomes.
+            ret.EmptySpeciesFlag = TrimSpeciesBackToElite(specieStatsArr);
+
+            // Rebuild _genomeList. It will now contain just the elite genomes.
+            RebuildGenomeList();
+
+            // Append offspring genomes to the elite genomes in _genomeList. We do this before calling the
+            // _genomeListEvaluator.Evaluate because some evaluation schemes re-evaluate the elite genomes 
+            // (otherwise we could just evaluate offspringList).
+            _genomeList.AddRange(ret.OffspringList);
+
+            return ret;
         }
 
         #endregion
