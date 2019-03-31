@@ -13,6 +13,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using Redzen.Numerics;
 using Redzen.Numerics.Distributions;
 using Redzen.Random;
@@ -186,7 +187,7 @@ namespace SharpNeat.EvolutionAlgorithms
             // Calculate statistics for each specie (mean fitness, target size, number of offspring to produce etc.)
             int offspringCount;
             SpecieStats[] specieStatsArr = CalcSpecieStats(out offspringCount);
-
+            
             // Create offspring.
             List<TGenome> offspringList = CreateOffspring(specieStatsArr, offspringCount);
 
@@ -622,6 +623,11 @@ namespace SharpNeat.EvolutionAlgorithms
             }
 
             _stats._totalOffspringCount += (ulong)offspringCount;
+
+            //HACK: This is not needed now, but it's super slow if we need it in the future
+            if (offspringList.Count > offspringCount)
+                return offspringList.Take(offspringCount).ToList();
+
             return offspringList;
         }
 

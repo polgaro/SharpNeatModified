@@ -1,8 +1,8 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.26403.7
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.28516.95
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SharpNeatLib", "SharpNeatLib\SharpNeatLib.csproj", "{ABC5C77A-DEBA-420C-926C-BD3E6F37AE15}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SharpNeatLib", "SharpNeatLib\SharpNeatLib.csproj", "{ABC5C77A-DEBA-420C-926C-BD3E6F37AE15}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SharpNeatGUI", "SharpNeatGUI\SharpNeatGUI.csproj", "{407D1C95-118D-42C5-9FCF-BB3628873B4E}"
 EndProject
@@ -17,6 +17,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SharpNeatDomainsExtra", "SharpNeatDomainsExtra\SharpNeatDomainsExtra.csproj", "{3A1B9DEC-AECE-42F3-BAD9-9172482C43AB}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EfficacySampler", "EfficacySampler\EfficacySampler.csproj", "{AC4EDED1-7BCE-4DA2-BCFA-1532F6238F40}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TicTacToeConsoleTest", "TicTacToeConsoleTest\TicTacToeConsoleTest.csproj", "{04C9F6F1-A045-43BD-8AD7-20FEA4270BBE}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -110,8 +112,23 @@ Global
 		{AC4EDED1-7BCE-4DA2-BCFA-1532F6238F40}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{AC4EDED1-7BCE-4DA2-BCFA-1532F6238F40}.Release|x86.ActiveCfg = Release|Any CPU
 		{AC4EDED1-7BCE-4DA2-BCFA-1532F6238F40}.Release|x86.Build.0 = Release|Any CPU
+		{04C9F6F1-A045-43BD-8AD7-20FEA4270BBE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{04C9F6F1-A045-43BD-8AD7-20FEA4270BBE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{04C9F6F1-A045-43BD-8AD7-20FEA4270BBE}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{04C9F6F1-A045-43BD-8AD7-20FEA4270BBE}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{04C9F6F1-A045-43BD-8AD7-20FEA4270BBE}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{04C9F6F1-A045-43BD-8AD7-20FEA4270BBE}.Debug|x86.Build.0 = Debug|Any CPU
+		{04C9F6F1-A045-43BD-8AD7-20FEA4270BBE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{04C9F6F1-A045-43BD-8AD7-20FEA4270BBE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{04C9F6F1-A045-43BD-8AD7-20FEA4270BBE}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{04C9F6F1-A045-43BD-8AD7-20FEA4270BBE}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{04C9F6F1-A045-43BD-8AD7-20FEA4270BBE}.Release|x86.ActiveCfg = Release|Any CPU
+		{04C9F6F1-A045-43BD-8AD7-20FEA4270BBE}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {C3098212-4C62-4116-AA3B-C3451C7CB340}
 	EndGlobalSection
 EndGlobal

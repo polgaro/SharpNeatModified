@@ -1,0 +1,6 @@
+﻿** 1) Variable to always save the very best genome into the next offspring directly
+	** NO NEED, species are the best genomes and are being added automatically into the next cycle
+
+2) Methods to allow the user to Generate offpring and evaluate them manually *no trainer needed*
+
+3) Learn more about how to control if the nodes go up or down.
