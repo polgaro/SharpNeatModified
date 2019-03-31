@@ -103,7 +103,7 @@ namespace TicTacToeConsoleTest
                         var decoder = experiment.CreateGenomeDecoder();
 
                         //with the offpring, evaluate
-                        var answers = offspringData.OffspringList.ToDictionary(
+                        var answers = _ea.GenomeList.ToDictionary(
                             x => x, 
                             x => new GameEvaluator().Evaluate(decoder.Decode(x))
                         );
