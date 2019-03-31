@@ -5,6 +5,7 @@ using System.Text;
 using SharpNeat.Domains;
 using SharpNeat.Phenomes;
 using SharpNeat.Core;
+using SharpNeat.Genomes.Neat;
 
 namespace TicTacToeConsoleTest
 {
@@ -12,7 +13,8 @@ namespace TicTacToeConsoleTest
     {
         public override IPhenomeEvaluator<IBlackBox> PhenomeEvaluator
         {
-            get { return new GameEvaluator(); }
+            //get { return new GameEvaluator(); }
+            get { return null; }
         }
 
         public override int InputCount
@@ -28,6 +30,11 @@ namespace TicTacToeConsoleTest
         public override bool EvaluateParents
         {
             get { return true; }
+        }
+
+        public override IGenomeListEvaluator<NeatGenome> GetGenomeListEvaluator(IGenomeDecoder<NeatGenome, IBlackBox> genomeDecoder)
+        {
+            return new ZeroListEvaluator<NeatGenome>();
         }
     }
 }

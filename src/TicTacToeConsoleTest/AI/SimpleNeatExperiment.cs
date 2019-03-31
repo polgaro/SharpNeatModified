@@ -222,6 +222,7 @@ namespace TicTacToeConsoleTest
         {
             //by default use a parallel evaluator
             return new ParallelGenomeListEvaluator<NeatGenome, IBlackBox>(genomeDecoder, PhenomeEvaluator, _parallelOptions);
+            
         }
 
         /// <summary>
