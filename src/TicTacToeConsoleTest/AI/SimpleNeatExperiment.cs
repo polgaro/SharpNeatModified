@@ -184,6 +184,20 @@ namespace TicTacToeConsoleTest
         /// <summary>
         /// Create and return a NeatEvolutionAlgorithm object ready for running the NEAT algorithm/search. Various sub-parts
         /// of the algorithm are also constructed and connected up.
+        /// This overload accepts a population parameter with the current population of the network
+        /// </summary>
+        public NeatEvolutionAlgorithm<NeatGenome> CreateEvolutionAlgorithm(List<NeatGenome> initialPopulation)
+        {
+            // Create a genome2 factory with our neat genome2 parameters object and the appropriate number of input and output neuron genes.
+            IGenomeFactory<NeatGenome> genomeFactory = CreateGenomeFactory();
+
+            // Create evolution algorithm.
+            return CreateEvolutionAlgorithm(genomeFactory, initialPopulation);
+        }
+
+        /// <summary>
+        /// Create and return a NeatEvolutionAlgorithm object ready for running the NEAT algorithm/search. Various sub-parts
+        /// of the algorithm are also constructed and connected up.
         /// This overload accepts a pre-built genome2 population and their associated/parent genome2 factory.
         /// </summary>
         public NeatEvolutionAlgorithm<NeatGenome> CreateEvolutionAlgorithm(IGenomeFactory<NeatGenome> genomeFactory, List<NeatGenome> genomeList)

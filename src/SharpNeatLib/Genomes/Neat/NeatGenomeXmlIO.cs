@@ -312,10 +312,14 @@ namespace SharpNeat.Genomes.Neat
 
             // Check all genomes have the same number of inputs & outputs.
             // Also track the highest genomeID and innovation ID values; we need these to construct a new genome factory.
-            uint maxGenomeId = 0;
-            uint maxInnovationId = 0;
+            
+            //uint maxGenomeId = 0;
+            //uint maxInnovationId = 0;
 
-            foreach(NeatGenome genome in genomeList)
+            uint maxGenomeId = genomeFactory.GenomeIdGenerator.NextId;
+            uint maxInnovationId = genomeFactory.InnovationIdGenerator.NextId;
+
+            foreach (NeatGenome genome in genomeList)
             {
                 // Check number of inputs/outputs.
                 if(genome.InputNeuronCount != inputCount || genome.OutputNeuronCount != outputCount) {

@@ -7,6 +7,7 @@ namespace TicTacToeConsoleTest
 {
     internal class RandomBrain: IPlayer
     {
+        static Random random = new Random();
         public RandomBrain()
         {
 
@@ -28,8 +29,8 @@ namespace TicTacToeConsoleTest
         {
             MoveDTO dto = new MoveDTO();
             int ubound = 3;
-            dto.X = new Random().Next(ubound);
-            dto.Y = new Random().Next(ubound);
+            dto.X = random.Next(ubound);
+            dto.Y = random.Next(ubound);
             return dto;
         }
     }

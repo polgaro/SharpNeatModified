@@ -4,8 +4,11 @@ using SharpNeat.Genomes.Neat;
 using SharpNeat.Phenomes;
 using SharpNeatLib.Model;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Xml;
 using TitTacToeGame;
 
@@ -14,6 +17,8 @@ namespace TicTacToeConsoleTest
     class Program
     {
         const string FILE = "train.xml";
+        const string NETWORK_FILE = "network.xml";
+        static Random random = new Random();
 
         static void Main(string[] args)
         {
@@ -48,8 +53,8 @@ namespace TicTacToeConsoleTest
                 // Decode the genome into a phenome (neural network).
                 var phenome = genomeDecoder.Decode(genome);
 
-                IPlayer p1 = new NeatBrain(phenome);
-                IPlayer p2 = new RandomBrain();
+                IPlayer p2 = new NeatBrain(phenome);
+                IPlayer p1 = new RandomBrain();
 
                 while (true)
                 {
@@ -76,8 +81,20 @@ namespace TicTacToeConsoleTest
                 #region Train
                 NeatEvolutionAlgorithm<NeatGenome> _ea;
 
+                List<NeatGenome> initialPopulation;
+                if (File.Exists(NETWORK_FILE))
+                {
+                    using (XmlReader xr = XmlReader.Create(NETWORK_FILE))
+                        initialPopulation = NeatGenomeXmlIO.ReadCompleteGenomeList(xr, true, (NeatGenomeFactory)experiment.CreateGenomeFactory());
+
+                    _ea = experiment.CreateEvolutionAlgorithm(initialPopulation);
+                }
+                else
+                {
+                    _ea = experiment.CreateEvolutionAlgorithm();
+                }
+
                 // Create evolution algorithm and attach update event.
-                _ea = experiment.CreateEvolutionAlgorithm();
                 _ea.UpdateEvent += new EventHandler(ea_UpdateEvent);
 
                 bool useUnnatendedTrain = false;
@@ -102,18 +119,58 @@ namespace TicTacToeConsoleTest
                         //create genome decoder
                         var decoder = experiment.CreateGenomeDecoder();
 
-                        //with the offpring, evaluate
-                        var answers = _ea.GenomeList.ToDictionary(
-                            x => x, 
-                            x => new GameEvaluator().Evaluate(decoder.Decode(x))
-                        );
+                        //decode them all
+                        Dictionary<NeatGenome, IBlackBox> decodedData = Enumerable.ToDictionary<NeatGenome, NeatGenome, IBlackBox>(
+                                _ea.GenomeList,
+                                x => x,
+                                x => decoder.Decode(x)
+                            );
+
+                        //create all the possible games
+                        var games = (
+                            from x in decodedData.Keys
+                            from y in decodedData.Keys
+                            where x != y
+                            select CreateGame(x, y, decodedData[x], decodedData[y])
+                            
+                        ).ToList();
+
+                        //initialize dictionary
+                        ConcurrentDictionary<NeatGenome, double> convertedAnswers = new ConcurrentDictionary<NeatGenome, double>();
+
+                        //initialize data in the dictionary
+                        foreach(NeatGenome x in decodedData.Keys)
+                        {
+                            convertedAnswers[x] = 0;
+                        }
+
+                        //play all games!
+                        Parallel.ForEach(games, 
+                            //new ParallelOptions { MaxDegreeOfParallelism = 1000},
+                            game =>
+                        {
+                            game.Game.PlayUntilFinished();
+
+                            lock (game.X)
+                            {
+                                convertedAnswers[game.X] += GameEvaluator.GetScore(game.Game.GetGameState(), true);
+                            }
+                            lock (game.Y)
+                            {
+                                convertedAnswers[game.Y] += GameEvaluator.GetScore(game.Game.GetGameState(), false);
+                            }
+                        });
+
+                        //Convert to dictionary
+                        Dictionary<NeatGenome, FitnessInfo> answers =
+                            convertedAnswers.ToDictionary(x => x.Key, y => new FitnessInfo(y.Value, y.Value) );
 
                         //set answers
                         KnownAnswerListEvaluator<NeatGenome, IBlackBox> evaluator = new KnownAnswerListEvaluator<NeatGenome, IBlackBox>();
                         evaluator.SetKnownAnswers(answers);
 
                         //call the evaluator
-                        evaluator.Evaluate(offspringData.OffspringList);
+                        evaluator.Evaluate(_ea.GenomeList);
 
                         //Update the species
                         _ea.UpdateSpecies(offspringData);
@@ -128,18 +185,46 @@ namespace TicTacToeConsoleTest
             }
         }
 
+        public class GameDTO
+        {
+            public IBlackBox P1 { get; set; }
+            public IBlackBox P2 { get; set; }
+            public Game Game { get; set; }
+            public NeatGenome X { get; internal set; }
+            public NeatGenome Y { get; internal set; }
+        }
+
+        private static GameDTO CreateGame(NeatGenome x, NeatGenome y, IBlackBox p1, IBlackBox p2)
+        {
+            IPlayer p1Brain = new NeatBrain(p1);
+            IPlayer p2Brain = new NeatBrain(p2);
+
+            return new GameDTO
+            {
+                P1 = p1,
+                P2 = p2,
+                X = x,
+                Y = y,
+                Game = new Game(p1Brain, p2Brain)
+            };
+        }
+
         private static void ea_UpdateEvent(object sender, EventArgs e)
         {
             NeatEvolutionAlgorithm<NeatGenome> _ea = (NeatEvolutionAlgorithm<NeatGenome>)sender;
-            Console.WriteLine(string.Format("gen={0:N0} bestFitness={1:N6} maxComplexity={2} currentChampComplexity={3}", 
+            Console.WriteLine(string.Format("gen={0:N0} bestFitness={1:N6} maxComplexity={2} currentChampComplexity={3} avg={4}", 
                 _ea.CurrentGeneration, 
                 _ea.Statistics._maxFitness, 
                 _ea.Statistics._maxComplexity, 
-                _ea.CurrentChampGenome.Complexity));
+                _ea.CurrentChampGenome.Complexity,
+                _ea.GenomeList.Average(g => g.EvaluationInfo.Fitness)));
 
             // Save the best genome to file
             var doc = NeatGenomeXmlIO.SaveComplete(new List<NeatGenome>() { _ea.CurrentChampGenome }, false);
             doc.Save(FILE);
+
+            doc = NeatGenomeXmlIO.SaveComplete(_ea.GenomeList, true);
+            doc.Save(NETWORK_FILE);
         }
 
         #region Draw
