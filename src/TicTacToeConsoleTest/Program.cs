@@ -53,8 +53,8 @@ namespace TicTacToeConsoleTest
                 // Decode the genome into a phenome (neural network).
                 var phenome = genomeDecoder.Decode(genome);
 
-                IPlayer p2 = new NeatBrain(phenome);
-                IPlayer p1 = new RandomBrain();
+                IPlayer p1 = new NeatBrain(phenome);
+                IPlayer p2 = new RandomBrain();
 
                 while (true)
                 {
